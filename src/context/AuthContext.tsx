@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios"
+import SpotifyWebPlayback from "react-spotify-web-playback-sdk-headless";
 
 interface User {
     name: string
@@ -85,8 +86,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    try {
+      const res = await axios.get(BACKEND_URL + "/api/v1/auth/logout", {withCredentials: true})
+      if (res.status !== 200) throw new Error("Failed to logout");
+  
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+    catch (e: any) {
+      console.error("Logout error:", e);
+    }
     setIsAuthenticated(false);
     navigate("/login");
   };
